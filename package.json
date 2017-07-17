@@ -1,6 +1,6 @@
 {
   "name": "vue-svgicon",
-  "version": "1.1.9",
+  "version": "1.2.0",
   "description": "A tool to create svg icon components. (vue 2.x)",
   "main": "./dist/index.js",
   "bin": {
@@ -10,6 +10,7 @@
     "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
     "svg": "node ./bin/svg.js -s ./demo/svg -t ./demo/src/icons",
+    "svg:ts": "node ./bin/svg.js -s ./demo/svg -t ./demo/src/icons --ext ts",
     "test-watch": "mocha-webpack --watch",
     "test": "mocha-webpack",
     "cover": "cross-env NODE_ENV=coverage nyc --reporter=lcov --reporter=text npm run test"
@@ -59,9 +60,9 @@
     "mocha-webpack": "next",
     "nyc": "^10.1.2",
     "vue": "^2.1.0",
-    "vue-loader": "^10.0.0",
+    "vue-loader": "^12.2.2",
     "vue-template-compiler": "^2.1.0",
-    "webpack": "^2.2.0",
+    "webpack": "^3.2.0",
     "webpack-dev-server": "^2.2.0",
     "webpack-merge": "^3.0.0",
     "webpack-node-externals": "^1.5.4"
