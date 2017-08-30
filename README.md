@@ -61,7 +61,7 @@ icon.register({
     width: ${width},
     height: ${height},
     viewBox: ${viewBox},
-    data: '${data}'
+    data: `${data}`
   }
 })
 
@@ -119,6 +119,28 @@ export default {
 You can import all icons at once
 ```javascript
 import 'icons'
+```
+
+## Options
+
+### tagName
+Custom component tag name. Default is **svgicon**
+```js
+Vue.use(svgicon, {
+  tagName: 'svgicon'
+})
+```
+```html
+<svgicon name="vue"></svgicon>
+```
+
+### defaultWidth / defaultHeight
+Set default size if size props not set.
+```js
+Vue.use(svgicon, {
+  defaultWidth: '1em',
+  defaultHeight: '1em'
+})
 ```
 
 ## Props

@@ -4,10 +4,15 @@
 
 <script>
   let icons = {}
+  let notLoadedIcons = []
+  let defaultWidth = ''
+  let defaultHeight = ''
 
   export default {
     data() {
-      return {}
+      return {
+        loaded: false
+      }
     },
     props: {
       icon: String,
@@ -49,7 +54,7 @@
       },
 
       iconData() {
-        if (this.iconName) {
+        if (this.iconName && this.loaded) {
           return icons[this.iconName]
         }
 
@@ -87,7 +92,14 @@
           } else {
             return this.iconData.data
           }
+        } else {
+          // if no iconData, push to notLoadedIcons
+          notLoadedIcons.push({
+            name: this.iconName,
+            component: this
+          })
         }
+
         return ''
       },
 
@@ -121,14 +133,25 @@
         }
 
         return {
-          width: width,
-          height: height
+          width: width || defaultWidth,
+          height: height || defaultHeight
         }
+      }
+    },
+
+    created () {
+      if (icons[this.iconName]) {
+        this.loaded = true
       }
     },
 
     install(Vue, options = {}) {
       let tagName = options.tagName || 'svgicon'
+
+      // default size
+      options.defaultWidth && (defaultWidth = options.defaultWidth)
+      options.defaultHeight && (defaultHeight = options.defaultHeight)
+
       Vue.component(tagName, this)
     },
 
@@ -138,8 +161,18 @@
         if (!icons[name]) {
           icons[name] = data[name]
         }
+
+        // check new register icon is not loaded, and set loaded to true
+        notLoadedIcons = notLoadedIcons.filter((v, ix) => {
+          if (v.name === name) {
+            v.component.$set(v.component, 'loaded', true)
+          }
+
+          return v.name !== name
+        })
       }
     },
+
     icons
   }
 
