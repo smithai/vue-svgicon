@@ -13,7 +13,6 @@ https://github.com/Justineo/vue-awesome
 https://mmf-fe.github.io/vue-svgicon/
 
 ## Some issues
-- [Work on server-side render (SSR)](#work-on-server-side-render-ssr)
 - [Work on IE and old browser](#work-on-ie-and-old-browser)
 
 ## Usage
@@ -73,6 +72,44 @@ vsvg -s /path/to/svg/source -t /path/for/generated/components --ext ts
 ```
 
 ### Use generated icon
+First of all, your should write some css code for `vue-svgicon` in global scope. Recommended code is below:
+```css
+/* recommended css code for vue-svgicon */
+.svg-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    color: inherit;
+    vertical-align: middle;
+    fill: none;
+    stroke: currentColor;
+}
+
+.svg-fill {
+    fill: currentColor;
+    stroke: none;
+}
+
+.svg-up {
+    transform: rotate(-90deg);
+}
+
+.svg-right {
+     /*default*/
+     transform: rotate(0deg);
+}
+
+.svg-down {
+    transform: rotate(90deg);
+}
+
+.svg-left {
+    transform: rotate(180deg);
+}
+
+```
+> your can use `classPrefix` option to set the default class name. The default prefix is `svg`
+
 Use plugin
 
 ```javascript
@@ -134,6 +171,21 @@ Vue.use(svgicon, {
 <svgicon name="vue"></svgicon>
 ```
 
+### classPrefix
+your can use `classPrefix` option to set the default class name. The default prefix is `svg`
+
+```js
+Vue.use(svgicon, {
+  classPrefix: 'vue-svg'
+})
+```
+It will be generated like this:
+```html
+<svg version="1.1" viewBox="0 0 4 7" class="vue-svg-icon vue-svg-fill vue-svg-up">
+<!-- svg code -->
+</svg>
+```
+
 ### defaultWidth / defaultHeight
 Set default size if size props not set.
 ```js
@@ -142,6 +194,7 @@ Vue.use(svgicon, {
   defaultHeight: '1em'
 })
 ```
+
 
 ## Props
 
@@ -218,6 +271,7 @@ Also, you can use CSS to add colors.
 ```
 > You can't use this feature in scoped block.
 
+
 Use gradient
 ```html
 <template>
@@ -237,6 +291,14 @@ Use gradient
 </template>
 ```
 
+### original
+use original color
+```
+<icon name="colorwheel" width="100" height="100" :original="true"></icon>
+<!-- overwrite original color -->
+<icon name="colorwheel" width="100" height="100" :original="true" color="_ black _ black _"></icon>
+```
+
 ### Multiple directory (Namespace)
 You can use multiple directory to discriminate the icons which has the same name.
 ```
@@ -254,22 +316,6 @@ You can use multiple directory to discriminate the icons which has the same name
 <svgicon name="sora/fit/arrow" width="50" height="50"></svgicon>
 
 ```
-
-### Work on server-side render (SSR)
-The component will insert the CSS style to the **document** object, so it will throw an error in SSR. The solution is to define an alias for vue-svgicon module if you use webpack.
-
-```javascript
-var config = {
-    module: {
-        resolve: {
-            alias: {
-                'vue-svgicon$': 'vue-svgicon/component/svgicon.vue'
-            }
-        }
-    }
-}
-```
-If you are using other build systems..., I think you can find a similar solution to how webpack does it.
 
 ### Work on IE and old browser
 This component doesn't work on IE because IE don't support `innerHTML` in SVGElement. You can use [innersvg-polyfill](innersvg-polyfill) to make it work. You can also use the polyfill provided by this component.
