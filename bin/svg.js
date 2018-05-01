@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 /**
  * build svg icon
@@ -6,194 +7,175 @@
  * @since 2017-02-17
  */
 
-const fs = require('fs-plus')
-const path = require('path')
-const Svgo = require('svgo')
-const glob = require('glob')
-const colors = require('colors')
-const args = require('yargs')
-  .usage('Usage: $0 -s svgSourcePath -t targetPath')
-  .demandOption(['s', 't'])
-  .describe('s', 'Svg source path')
-  .describe('t', 'Generate icon path')
-  .describe('ext', 'Generated file\'s extension')
-  .default('ext', 'js')
-  .describe('tpl', 'the template file which to generate icon files')
-  .describe('es6', 'Use ES6 module')
-  .help('help')
-  .alias('h', 'help')
-  .argv
+var fs = require('fs-plus');
+var path = require('path');
+var Svgo = require('svgo');
+var glob = require('glob');
+var colors = require('colors');
+var args = require('yargs').usage('Usage: $0 -s svgSourcePath -t targetPath').demandOption(['s', 't']).describe('s', 'Svg source path').describe('t', 'Generate icon path').describe('ext', 'Generated file\'s extension').default('ext', 'js').describe('tpl', 'the template file which to generate icon files').describe('es6', 'Use ES6 module').help('help').alias('h', 'help').argv;
 
 // svg fle path
-const sourcePath = path.join(process.cwd(), args.s, '**/*.svg')
+var sourcePath = path.join(process.cwd(), args.s, '**/*.svg');
 
 // generated icon path
-const targetPath = path.join(process.cwd(), args.t)
+var targetPath = path.join(process.cwd(), args.t);
 
 // the template file which to generate icon files
-const tplPath = args.tpl ?
-  path.join(process.cwd(), args.tpl) :
-  path.join(__dirname, `../icon.tpl${args.es6 ? '.es6' : ''}.txt`)
+var tplPath = args.tpl ? path.join(process.cwd(), args.tpl) : path.join(__dirname, '../icon.tpl' + (args.es6 ? '.es6' : '') + '.txt');
 
-const tpl = fs.readFileSync(tplPath, 'utf8')
+var tpl = fs.readFileSync(tplPath, 'utf8');
 
-const ext = args.ext
+var ext = args.ext;
 
 // delete previous icons
-fs.removeSync(targetPath)
+fs.removeSync(targetPath);
 
-let svgo = new Svgo({
-  plugins: [
-    {
-      removeAttrs: {
-      }
-    },
-    {
-      removeTitle: true
-    },
-    {
-      removeStyleElement: true
-    },
-    {
-      removeComments: true
-    },
-    {
-      removeDesc: true
-    },
-    {
-      removeUselessDefs: true
-    },
-    {
-      cleanupIDs: {
-        remove: true,
-        prefix: 'svgicon-'
-      }
-    },
-    {
-      convertShapeToPath: true
+var svgo = new Svgo({
+  plugins: [{
+    removeAttrs: {}
+  }, {
+    removeTitle: true
+  }, {
+    removeStyleElement: true
+  }, {
+    removeComments: true
+  }, {
+    removeDesc: true
+  }, {
+    removeUselessDefs: true
+  }, {
+    cleanupIDs: {
+      remove: true,
+      prefix: 'svgicon-'
     }
-  ]
-})
+  }, {
+    convertShapeToPath: true
+  }]
+});
 
 // simple template compile
-function compile (content, data) {
-    return content.replace(/\${(\w+)}/gi, function (match, name) {
-        return data[name] ? data[name] : ''
-    })
+function compile(content, data) {
+  return content.replace(/\${(\w+)}/gi, function (match, name) {
+    return data[name] ? data[name] : '';
+  });
 }
 
 // get file path by filename
-function getFilePath (filename, subDir = '') {
-  let filePath = filename.replace(path.resolve(args.s), '').replace(path.basename(filename), '')
+function getFilePath(filename) {
+  var subDir = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+  var filePath = filename.replace(path.resolve(args.s), '').replace(path.basename(filename), '');
 
   if (subDir) {
-    filePath = filePath.replace(subDir + path.sep, '')
+    filePath = filePath.replace(subDir + path.sep, '');
   }
 
-  if ( /^[\/\\]/.test(filePath) ) {
-    filePath = filePath.substr(1)
+  if (/^[\/\\]/.test(filePath)) {
+    filePath = filePath.substr(1);
   }
 
-  return filePath.replace(/\\/g, '/', 'g')
+  return filePath.replace(/\\/g, '/', 'g');
 }
 
 // generate index.js, which import all icons
-function generateIndex(files, subDir = '') {
-  let isES6 = args.es6
-  let content = ext === 'js' ? '/* eslint-disable */\n' : ''
-  let dirMap = {}
+function generateIndex(files) {
+  var subDir = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
-  files.forEach((file) => {
-    let name = path.basename(file).split('.')[0]
-    let filePath = getFilePath(file, subDir)
-    let dir = filePath.split('/')[0]
+  var isES6 = args.es6;
+  var content = ext === 'js' ? '/* eslint-disable */\n' : '';
+  var dirMap = {};
+
+  files.forEach(function (file) {
+    var name = path.basename(file).split('.')[0];
+    var filePath = getFilePath(file, subDir);
+    var dir = filePath.split('/')[0];
 
     if (dir) {
       if (!dirMap[dir]) {
-        dirMap[dir] = []
-        content += isES6 ? `import './${dir}'\n` : `require('./${dir}')\n`
+        dirMap[dir] = [];
+        content += isES6 ? 'import \'./' + dir + '\'\n' : 'require(\'./' + dir + '\')\n';
       }
-      dirMap[dir].push(file)
+      dirMap[dir].push(file);
     } else {
-      content += isES6 ? `import './${filePath}${name}'\n` : `require('./${filePath}${name}')\n`
+      content += isES6 ? 'import \'./' + filePath + name + '\'\n' : 'require(\'./' + filePath + name + '\')\n';
     }
-  })
+  });
 
-  fs.writeFileSync(path.join(targetPath, subDir, `index.${ext}`), content, 'utf-8')
-  console.log(colors.green(`Generated ${subDir ? subDir + path.sep : ''}index.${ext}`))
+  fs.writeFileSync(path.join(targetPath, subDir, 'index.' + ext), content, 'utf-8');
+  console.log(colors.green('Generated ' + (subDir ? subDir + path.sep : '') + 'index.' + ext));
 
   // generate subDir index.js
-  for (let dir in dirMap) {
-    generateIndex(dirMap[dir], path.join(subDir, dir))
+  for (var dir in dirMap) {
+    generateIndex(dirMap[dir], path.join(subDir, dir));
   }
 }
 
 glob(sourcePath, function (err, files) {
   if (err) {
-    console.log(err)
-    return false
+    console.log(err);
+    return false;
   }
 
-  files = files.map((f) => path.normalize(f))
+  files = files.map(function (f) {
+    return path.normalize(f);
+  });
 
-  files.forEach((filename, ix) => {
-    let name = path.basename(filename).split('.')[0]
-    let content = fs.readFileSync(filename, 'utf-8')
-    let filePath = getFilePath(filename)
+  files.forEach(function (filename, ix) {
+    var name = path.basename(filename).split('.')[0];
+    var content = fs.readFileSync(filename, 'utf-8');
+    var filePath = getFilePath(filename);
 
-    svgo.optimize(content, (result) => {
-      let data = result.data.replace(/<svg[^>]+>/gi, '').replace(/<\/svg>/gi, '')
-      let viewBox = result.data.match(/viewBox="([-\d\.]+\s[-\d\.]+\s[-\d\.]+\s[-\d\.]+)"/)
+    svgo.optimize(content, function (result) {
+      var data = result.data.replace(/<svg[^>]+>/gi, '').replace(/<\/svg>/gi, '');
+      var viewBox = result.data.match(/viewBox="([-\d\.]+\s[-\d\.]+\s[-\d\.]+\s[-\d\.]+)"/);
 
       if (viewBox && viewBox.length > 1) {
-        viewBox = viewBox[1]
-      } else if (result.info.height && result.info.width){
-        viewBox = `0 0 ${result.info.width} ${result.info.height}`
+        viewBox = viewBox[1];
+      } else if (result.info.height && result.info.width) {
+        viewBox = '0 0 ' + result.info.width + ' ' + result.info.height;
       } else {
-        viewBox = '0 0 200 200'
+        viewBox = '0 0 200 200';
       }
 
       // add pid attr, for css
-      let shapeReg = /<(path|rect|circle|polygon|line|polyline|ellipse)\s/gi
-      let id = 0
+      var shapeReg = /<(path|rect|circle|polygon|line|polyline|ellipse)\s/gi;
+      var id = 0;
       data = data.replace(shapeReg, function (match) {
-        return match + `pid="${id++}" `
-      })
+        return match + ('pid="' + id++ + '" ');
+      });
 
       // rename fill and stroke. (It can restroe in vue-svgicon)
-      let styleShaeReg = /<(path|rect|circle|polygon|line|polyline|g|ellipse).+>/gi
-      let styleReg = /fill=\"|stroke="/gi
+      var styleShaeReg = /<(path|rect|circle|polygon|line|polyline|g|ellipse).+>/gi;
+      var styleReg = /fill=\"|stroke="/gi;
       data = data.replace(styleShaeReg, function (shape) {
         return shape.replace(styleReg, function (styleName) {
-          return '_' + styleName
-        })
-      })
+          return '_' + styleName;
+        });
+      });
 
       // replace element id, make sure ID is unique. fix #16
-      let idReg = /svgicon-(\w)/g
+      var idReg = /svgicon-(\w)/g;
       data = data.replace(idReg, function (match, elId) {
-        return `svgicon-${filePath.replace(/[\\\/]/g, '-')}${name}-${elId}`
-      })
+        return 'svgicon-' + filePath.replace(/[\\\/]/g, '-') + name + '-' + elId;
+      });
 
       // escape single quotes
-      data = data.replace(/\'/g, '\\\'')
+      data = data.replace(/\'/g, '\\\'');
 
-      let content = compile(tpl, {
-          name: `${filePath}${name}`,
-          width: parseFloat(result.info.width) || 16,
-          height: parseFloat(result.info.height) || 16,
-          viewBox: `'${viewBox}'`,
-          data: data
-      })
+      var content = compile(tpl, {
+        name: '' + filePath + name,
+        width: parseFloat(result.info.width) || 16,
+        height: parseFloat(result.info.height) || 16,
+        viewBox: '\'' + viewBox + '\'',
+        data: data
+      });
 
-      fs.writeFileSync(path.join(targetPath, filePath, name + `.${ext}`), content, 'utf-8')
-      console.log(colors.yellow(`Generated icon: ${filePath}${name}`))
+      fs.writeFileSync(path.join(targetPath, filePath, name + ('.' + ext)), content, 'utf-8');
+      console.log(colors.yellow('Generated icon: ' + filePath + name));
 
       if (ix === files.length - 1) {
-        generateIndex(files)
+        generateIndex(files);
       }
-
-    })
-  })
-})
-
+    });
+  });
+});
