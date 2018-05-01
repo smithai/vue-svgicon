@@ -1,10 +1,14 @@
-# vue-svgicon
+# SmithAI vue-svgicon
 
 [![Build Status](https://img.shields.io/travis/MMF-FE/vue-svgicon.svg?style=flat-square)](https://travis-ci.org/MMF-FE/vue-svgicon)
 [![Coverage Status](https://img.shields.io/coveralls/MMF-FE/vue-svgicon.svg?style=flat-square)](https://coveralls.io/r/MMF-FE/vue-svgicon?branch=master)
 
 
 A tool to create svg icon components. (vue 2.x) [中文](./README-CN.md)
+
+## SmithAI modifications
+- To counter an issue with Node v4.2.6, we've converted `bin/svg.js` to use es5 using babel [babel js](https://babeljs.io/)
+- We've modified the executable to `smithai-vsvg`
 
 ## Inspiration
 https://github.com/Justineo/vue-awesome
@@ -27,14 +31,14 @@ npm install vue-svgicon --save-dev
 #### Command
 ```bash
 # generate svg icon components
-vsvg -s /path/to/svg/source -t /path/for/generated/components
+smithai-vsvg -s /path/to/svg/source -t /path/for/generated/components
 ```
 
 #### Use as npm scripts
 ```json
 {
     "scripts": {
-        "svg": "vsvg -s ./static/svg/src -t ./src/icons"
+        "svg": "smithai-vsvg -s ./static/svg/src -t ./src/icons"
     }
 }
 ```
