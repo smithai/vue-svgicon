@@ -2,4 +2,4 @@
  * Register global vue
  */
 
-module.exports = require('./component/svgicon.vue')
+module.exports = require('./component/smithai-svgicon.vue')

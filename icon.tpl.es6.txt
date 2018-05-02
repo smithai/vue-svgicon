@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as icon from 'vue-svgicon'
+import * as icon from 'smithai-vue-svgicon'
 icon.register({
   '${name}': {
     width: ${width},
